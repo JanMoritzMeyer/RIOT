@@ -48,6 +48,8 @@ void server_init(void);
  */
 void notify_observers(void);
 
+
+
 /**
  * @brief   CoAP handler functions (exported for testing)
  */
