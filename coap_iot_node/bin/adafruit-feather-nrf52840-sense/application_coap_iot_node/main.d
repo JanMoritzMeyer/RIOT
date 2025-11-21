@@ -14,8 +14,7 @@
  /usr/include/newlib/sys/lock.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/assert.h \
  /usr/lib/gcc/arm-none-eabi/13.2.1/include/stdint.h \
- /usr/include/newlib/sys/stdio.h /usr/include/newlib/string.h \
- /usr/include/newlib/sys/string.h \
+ /usr/include/newlib/sys/stdio.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/core/include/msg.h \
  /usr/lib/gcc/arm-none-eabi/13.2.1/include/stdbool.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/core/include/sched.h \
@@ -28,11 +27,10 @@
  /home/xostra/workspace/iot_firmware_app/RIOT/core/include/native_sched.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/clist.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/list.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/shell.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/drivers/include/periph/pm.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/cpu/nrf52/include/periph_cpu.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/cpu/nrf5x_common/include/periph_cpu_common.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/cpu/cortexm_common/include/cpu.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/gcoap.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/event/callback.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/event.h \
+ /usr/include/newlib/string.h /usr/include/newlib/sys/string.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/irq.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/cpu/nrf52/include/cpu_conf.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/cpu/cortexm_common/include/cpu_conf_common.h \
@@ -52,37 +50,14 @@
  /home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/thread_config.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/core/include/thread_flags.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/cpu/cortexm_common/include/thread_arch.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/xfa.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/flash_utils.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/xtimer.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/timex.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/time_units.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/ptrtag.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/ztimer.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/core/include/mbox.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/core/include/mutex.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/architecture.h \
  /usr/lib/gcc/arm-none-eabi/13.2.1/include/limits.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/cpu/cortexm_common/include/architecture_arch.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/rmutex.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/ztimer/xtimer_compat.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/boards/adafruit-feather-nrf52840-sense/include/board.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/board_common.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/drivers/include/periph/gpio.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/boards/adafruit-feather-nrf52840-sense/include/periph_conf.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/cfg_clock_32_0.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/cfg_rtt_default.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/cfg_timer_default.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/ztimer.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/core/include/mbox.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/saul_reg.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/drivers/include/saul.h \
- /usr/include/newlib/errno.h /usr/include/newlib/sys/errno.h \
- /usr/include/newlib/sys/types.h /usr/include/newlib/sys/_stdint.h \
- /usr/include/newlib/sys/_pthreadtypes.h \
- /usr/include/newlib/machine/types.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/phydat.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/gcoap.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/event/callback.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/event.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/ptrtag.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/event/timeout.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/ipv6/addr.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/byteorder.h \
@@ -90,7 +65,11 @@
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/unaligned.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/ipv4/addr.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/sock/udp.h \
+ /usr/include/newlib/errno.h /usr/include/newlib/sys/errno.h \
  /usr/include/newlib/stdlib.h /usr/include/newlib/machine/stdlib.h \
+ /usr/include/newlib/sys/types.h /usr/include/newlib/sys/_stdint.h \
+ /usr/include/newlib/sys/_pthreadtypes.h \
+ /usr/include/newlib/machine/types.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/af.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/sock.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/iolist.h \
@@ -109,6 +88,7 @@
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/dhcpv6/client.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/ieee802154.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/eui64.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/time_units.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/ethernet/hdr.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/gnrc/ipv6/nib/conf.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/gnrc/netif/6lo.h \
@@ -119,6 +99,19 @@
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/gnrc/netif/pktq/type.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/gnrc/pktqueue.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/utlist.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/xtimer.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/timex.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/ztimer/xtimer_compat.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/boards/adafruit-feather-nrf52840-sense/include/board.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/cpu/cortexm_common/include/cpu.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/board_common.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/drivers/include/periph/gpio.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/cpu/nrf52/include/periph_cpu.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/cpu/nrf5x_common/include/periph_cpu_common.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/boards/adafruit-feather-nrf52840-sense/include/periph_conf.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/cfg_clock_32_0.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/cfg_rtt_default.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/cfg_timer_default.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/l2util.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/ndp.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/drivers/include/net/netdev.h \
@@ -145,12 +138,17 @@
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/nanocoap/cache.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/hashes/sha256.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/hashes/sha2xx_common.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/shell.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/drivers/include/periph/pm.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/xfa.h \
+ /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/flash_utils.h \
  /home/xostra/workspace/iot_firmware_app/coap_iot_node/gcoap_example.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/fmt.h \
  /usr/include/newlib/time.h /usr/include/newlib/machine/time.h \
  /usr/include/newlib/sys/timespec.h /usr/include/newlib/sys/_timespec.h \
  /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/utils.h \
- /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/od.h
+ /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/od.h \
+ /home/xostra/workspace/iot_firmware_app/coap_iot_node/coap_client.h
 /home/xostra/workspace/iot_firmware_app/coap_iot_node/bin/adafruit-feather-nrf52840-sense/riotbuild/riotbuild.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/core/include/stdio.h:
 /usr/include/newlib/stdio.h:
@@ -172,8 +170,6 @@
 /home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/assert.h:
 /usr/lib/gcc/arm-none-eabi/13.2.1/include/stdint.h:
 /usr/include/newlib/sys/stdio.h:
-/usr/include/newlib/string.h:
-/usr/include/newlib/sys/string.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/core/include/msg.h:
 /usr/lib/gcc/arm-none-eabi/13.2.1/include/stdbool.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/core/include/sched.h:
@@ -187,11 +183,11 @@
 /home/xostra/workspace/iot_firmware_app/RIOT/core/include/native_sched.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/clist.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/list.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/shell.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/drivers/include/periph/pm.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/cpu/nrf52/include/periph_cpu.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/cpu/nrf5x_common/include/periph_cpu_common.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/cpu/cortexm_common/include/cpu.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/gcoap.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/event/callback.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/event.h:
+/usr/include/newlib/string.h:
+/usr/include/newlib/sys/string.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/irq.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/cpu/nrf52/include/cpu_conf.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/cpu/cortexm_common/include/cpu_conf_common.h:
@@ -211,39 +207,14 @@
 /home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/thread_config.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/core/include/thread_flags.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/cpu/cortexm_common/include/thread_arch.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/xfa.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/flash_utils.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/xtimer.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/timex.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/time_units.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/ptrtag.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/ztimer.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/core/include/mbox.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/core/include/mutex.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/architecture.h:
 /usr/lib/gcc/arm-none-eabi/13.2.1/include/limits.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/cpu/cortexm_common/include/architecture_arch.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/rmutex.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/ztimer/xtimer_compat.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/boards/adafruit-feather-nrf52840-sense/include/board.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/board_common.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/drivers/include/periph/gpio.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/boards/adafruit-feather-nrf52840-sense/include/periph_conf.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/cfg_clock_32_0.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/cfg_rtt_default.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/cfg_timer_default.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/ztimer.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/core/include/mbox.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/saul_reg.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/drivers/include/saul.h:
-/usr/include/newlib/errno.h:
-/usr/include/newlib/sys/errno.h:
-/usr/include/newlib/sys/types.h:
-/usr/include/newlib/sys/_stdint.h:
-/usr/include/newlib/sys/_pthreadtypes.h:
-/usr/include/newlib/machine/types.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/phydat.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/gcoap.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/event/callback.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/event.h:
-/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/ptrtag.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/event/timeout.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/ipv6/addr.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/byteorder.h:
@@ -251,8 +222,14 @@
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/unaligned.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/ipv4/addr.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/sock/udp.h:
+/usr/include/newlib/errno.h:
+/usr/include/newlib/sys/errno.h:
 /usr/include/newlib/stdlib.h:
 /usr/include/newlib/machine/stdlib.h:
+/usr/include/newlib/sys/types.h:
+/usr/include/newlib/sys/_stdint.h:
+/usr/include/newlib/sys/_pthreadtypes.h:
+/usr/include/newlib/machine/types.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/af.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/sock.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/iolist.h:
@@ -272,6 +249,7 @@
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/dhcpv6/client.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/ieee802154.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/eui64.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/time_units.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/ethernet/hdr.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/gnrc/ipv6/nib/conf.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/gnrc/netif/6lo.h:
@@ -282,6 +260,19 @@
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/gnrc/netif/pktq/type.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/gnrc/pktqueue.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/utlist.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/xtimer.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/timex.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/ztimer/xtimer_compat.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/boards/adafruit-feather-nrf52840-sense/include/board.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/cpu/cortexm_common/include/cpu.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/board_common.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/drivers/include/periph/gpio.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/cpu/nrf52/include/periph_cpu.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/cpu/nrf5x_common/include/periph_cpu_common.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/boards/adafruit-feather-nrf52840-sense/include/periph_conf.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/cfg_clock_32_0.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/cfg_rtt_default.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/boards/common/nrf52/include/cfg_timer_default.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/l2util.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/ndp.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/drivers/include/net/netdev.h:
@@ -308,6 +299,10 @@
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/nanocoap/cache.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/hashes/sha256.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/hashes/sha2xx_common.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/shell.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/drivers/include/periph/pm.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/core/lib/include/xfa.h:
+/home/xostra/workspace/iot_firmware_app/RIOT/sys/include/flash_utils.h:
 /home/xostra/workspace/iot_firmware_app/coap_iot_node/gcoap_example.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/fmt.h:
 /usr/include/newlib/time.h:
@@ -316,3 +311,4 @@
 /usr/include/newlib/sys/_timespec.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/net/utils.h:
 /home/xostra/workspace/iot_firmware_app/RIOT/sys/include/od.h:
+/home/xostra/workspace/iot_firmware_app/coap_iot_node/coap_client.h:
