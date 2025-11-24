@@ -210,7 +210,7 @@ static int _cmd_coap_info(int argc, char **argv)
 static int _cmd_coap_get(int argc, char **argv)
 {
     if (argc < 2) {
-        printf("usage: %s <addr> <uri>\n", argv[0]);
+        printf("usage: %s coap://[<host>]:<port>/<uri>\n", argv[0]);
         return 1;
     }
 
@@ -243,14 +243,56 @@ static int _cmd_coap_get(int argc, char **argv)
 
 static int _cmd_coap_put(int argc, char **argv)
 {
+    if (argc < 3) {
+        printf("usage: %s coap://[<host>]:<port>/<uri> <data>\n", argv[0]);
+        return 1;
+    }
     
+    int apos = 1;
+    coap_pkt_t pdu;
+    size_t len;
+    sock_udp_ep_t remote;
+    uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
 
-    (void)argc;
-    (void)argv;
-    
-    printf("CoAP port: %u\n", CONFIG_GCOAP_PORT);
-    printf("CoAP server running\n");
+    const char *path;
+    if (_uristr2remote(argv[apos], &remote, &path, _last_req_uri, sizeof(_last_req_uri))) {
+        puts("Could not parse URI");
+        return 1;
+    }
+
+    gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_METHOD_PUT, path);
+
+    size_t paylen = 0;
+    if(apos < argc) {
+        coap_opt_add_format(&pdu, COAP_FORMAT_TEXT);
+        paylen = strlen(argv[apos++]);
+    }
+
+    if(paylen){
+        len = coap_opt_finish(&pdu, COAP_OPT_FINISH_PAYLOAD);
+        if (pdu.payload_len >= paylen) {
+            memcpy(pdu.payload, argv[apos++], paylen);
+            len += paylen;
+        }
+        else {
+            puts("gcoap_cli: msg buffer too small");
+            return 1;
+        }
+    }
+    else {
+        len = coap_opt_finish(&pdu, COAP_OPT_FINISH_NONE);
+    }
+
+    printf("gcoap_cli: sending msg ID %u, %" PRIuSIZE " bytes\n",
+        coap_get_id(&pdu), len);
+
+    gcoap_socket_type_t tl = _get_tl(_last_req_uri);  // UDP oder DTLS?
+    if (_send(&buf[0], len, &remote, NULL, tl) <= 0) {
+        puts("gcoap_cli: msg send failed");
+    }
     return 0;
+
+
 }
 
 static const shell_command_t shell_commands[] = {

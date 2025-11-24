@@ -50,16 +50,6 @@ void notify_observers(void);
 
 
 
-/**
- * @brief   CoAP handler functions (exported for testing)
- */
-ssize_t _sensor_temp_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-ssize_t _sensor_hum_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-ssize_t _sensors_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-ssize_t _sensor_accel_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-ssize_t _sensor_press_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-ssize_t _sensor_light_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-
 #ifdef __cplusplus
 }
 #endif

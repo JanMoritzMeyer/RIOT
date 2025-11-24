@@ -29,16 +29,17 @@
 
 static ssize_t _encode_link(const coap_resource_t *resource, char *buf,
                             size_t maxlen, coap_link_encoder_ctx_t *context);
-ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-ssize_t _riot_board_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-ssize_t _sensors_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-ssize_t _sensor_accel_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-ssize_t _sensor_hum_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-ssize_t _sensor_light_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-ssize_t _sensor_press_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-ssize_t _sensor_temp_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _riot_board_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _sensors_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _sensor_accel_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _sensor_hum_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _sensor_light_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _sensor_press_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _sensor_temp_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 // static ssize_t _led_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 // static ssize_t _led_color_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _led_usage_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 
 static saul_reg_t* _find_saul_device(uint8_t type);
 static int _read_sensor_value(uint8_t type, phydat_t *data);
@@ -48,6 +49,7 @@ static const coap_resource_t _resources[] = {
     { "/cli/stats", COAP_GET | COAP_PUT, _stats_handler, NULL },
     // { "/led", COAP_GET | COAP_PUT, _led_handler, NULL },
     // { "/led/color", COAP_GET | COAP_PUT, _led_color_handler, NULL },
+    { "/led/usage", COAP_GET, _led_usage_handler, NULL },
     { "/riot/board", COAP_GET, _riot_board_handler, NULL },
     { "/sensors", COAP_GET, _sensors_handler, NULL },
     { "/sensors/accel", COAP_GET, _sensor_accel_handler, NULL },
@@ -188,12 +190,29 @@ ssize_t _sensors_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request
         "light - Light Sensor\n"
         "accel - Accelerometer\n"
         "Available LED control at /led and /led/color\n"
-        "LED control supports GET and PUT methods.\n";
+        "LED control supports GET and PUT methods.\n"
+        "For LED usage information, access /led/usage\n";
 
 
    memcpy(pdu->payload, sensor_list, strlen(sensor_list));
    return resp_len + strlen(sensor_list);
 }
+
+ssize_t _led_usage_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+    (void)ctx;
+    gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
+    coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
+    size_t resp_len = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
+
+    const char* led_info =
+        "LED Info:\n"
+        "This device has an RGB LED controllable via /led and /led/color endpoints.\n"
+        "Use GET to retrieve current LED state and PUT to change it.\n";
+
+   memcpy(pdu->payload, led_info, strlen(led_info));
+   return resp_len + strlen(led_info);
+}
+
 
 ssize_t _sensor_temp_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
     (void)ctx;
