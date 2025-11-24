@@ -27,36 +27,44 @@
 // #include "net/dsm.h"
 // #include "tinydtls_keys.h"
 
-static ssize_t _encode_link(const coap_resource_t *resource, char *buf,
-                            size_t maxlen, coap_link_encoder_ctx_t *context);
+
+static saul_reg_t* _find_saul_device(uint8_t type);
+static int _read_sensor_value(uint8_t type, phydat_t *data);
+// static int _write_led_value(uint8_t type, phydat_t *data);
+
+static ssize_t _encode_link(const coap_resource_t *resource, char *buf, size_t maxlen, coap_link_encoder_ctx_t *context);
 static ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _riot_board_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-static ssize_t _sensors_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _info_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _sensor_accel_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _sensor_hum_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _sensor_light_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _sensor_press_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _sensor_temp_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-// static ssize_t _led_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-// static ssize_t _led_color_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _led_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _led_color_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _led_usage_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _led_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _led_put_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _led_color_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static saul_reg_t* _find_saul_device_by_name(const char *name);
+static ssize_t _devices_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 
-static saul_reg_t* _find_saul_device(uint8_t type);
-static int _read_sensor_value(uint8_t type, phydat_t *data);
 
 /* CoAP resources for IoT peripherals - Must be sorted by path (ASCII order) */
 static const coap_resource_t _resources[] = {
     { "/cli/stats", COAP_GET | COAP_PUT, _stats_handler, NULL },
-    // { "/led", COAP_GET | COAP_PUT, _led_handler, NULL },
-    // { "/led/color", COAP_GET | COAP_PUT, _led_color_handler, NULL },
+    { "/led", COAP_GET | COAP_PUT, _led_handler, NULL },
+    { "/led/color", COAP_GET | COAP_PUT, _led_color_handler, NULL },
     { "/led/usage", COAP_GET, _led_usage_handler, NULL },
     { "/riot/board", COAP_GET, _riot_board_handler, NULL },
-    { "/sensors", COAP_GET, _sensors_handler, NULL },
+    { "/info", COAP_GET, _info_handler, NULL },
     { "/sensors/accel", COAP_GET, _sensor_accel_handler, NULL },
     { "/sensors/hum", COAP_GET, _sensor_hum_handler, NULL },
     { "/sensors/light", COAP_GET, _sensor_light_handler, NULL },
     { "/sensors/press", COAP_GET, _sensor_press_handler, NULL },
     { "/sensors/temp", COAP_GET, _sensor_temp_handler, NULL },
+    { "/devices", COAP_GET, _devices_handler, NULL }, 
 };
 
 static const char *_link_params[] = {
@@ -72,6 +80,49 @@ static gcoap_listener_t _listener = {
     NULL,
     NULL
 };
+
+
+static ssize_t _devices_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+    (void)ctx;
+    (void)pdu;
+    
+    gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
+    coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
+    size_t resp_len = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
+
+    char *response = (char *)pdu->payload;
+    size_t pos = 0;
+    
+    pos += snprintf(response + pos, len - resp_len - pos, "Available SAUL devices:\n");
+    
+    saul_reg_t *dev = saul_reg;
+    while (dev && pos < len - resp_len - 50) {
+        pos += snprintf(response + pos, len - resp_len - pos,
+                       "- %s (type: %d)\n",
+                       dev->name ? dev->name : "unnamed",
+                       dev->driver->type);
+        dev = dev->next;
+    }
+    
+    return resp_len + pos;
+}
+
+
+
+
+
+static saul_reg_t* _find_saul_device_by_name(const char *name) {
+    saul_reg_t *dev = saul_reg;
+    while (dev) {
+        if (dev->name && strcmp(dev->name, name) == 0) {
+            return dev;
+        }
+        dev = dev->next;
+    }
+    return NULL;
+}
+
+
 
 static saul_reg_t* _find_saul_device(uint8_t type) {
     saul_reg_t *dev = saul_reg;
@@ -101,6 +152,23 @@ static int _read_sensor_value(uint8_t type, phydat_t *data) {
     return res;
 }
 
+
+// static int _write_led_value(uint8_t type, phydat_t *data) {
+//     saul_reg_t *dev = _find_saul_device(type);
+//     if (!dev) {
+//         DEBUG("LED type %d not found\n", type);
+//         return -1;
+//     }
+    
+//     int res = saul_reg_write(dev, data);
+//     if (res < 0) {
+//         DEBUG("Failed to write LED: %d\n", res);
+//         return res;
+//     }
+    
+//     return res;
+// }
+
 /* Adds link format params to resource list */
 static ssize_t _encode_link(const coap_resource_t *resource, char *buf,
                             size_t maxlen, coap_link_encoder_ctx_t *context) {
@@ -120,7 +188,7 @@ static ssize_t _encode_link(const coap_resource_t *resource, char *buf,
 }
 
 
-ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx)
+static ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx)
 {
     (void)ctx;
 
@@ -155,7 +223,7 @@ ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_c
 }
 
 
-ssize_t _riot_board_handler(coap_pkt_t *pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx)
+static ssize_t _riot_board_handler(coap_pkt_t *pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx)
 {
     (void)ctx;
     gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
@@ -174,47 +242,45 @@ ssize_t _riot_board_handler(coap_pkt_t *pdu, uint8_t *buf, size_t len, coap_requ
 }
 
 
-ssize_t _sensors_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+static ssize_t _info_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
     
     (void)ctx;
     gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
     coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
     size_t resp_len = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
 
-    const char* sensor_list =
-        "Available sensors:\n"
-        "Access specific sensor data at /sensors/<type>\n"
-        "temp - Temperature Sensor\n"
-        "hum  - Humidity Sensor\n"
-        "press - Pressure Sensor\n"
-        "light - Light Sensor\n"
-        "accel - Accelerometer\n"
-        "Available LED control at /led and /led/color\n"
-        "LED control supports GET and PUT methods.\n"
-        "For LED usage information, access /led/usage\n";
+    char *response = (char *)pdu->payload;
+    size_t pos = snprintf(response, len - resp_len,
+        "Sensors: /sensors/{temp,hum,press,light,accel}\n"
+        "LED: /led, /led/color, /led/usage\n"
+    );
+   
 
 
-   memcpy(pdu->payload, sensor_list, strlen(sensor_list));
-   return resp_len + strlen(sensor_list);
+   return resp_len + pos ;
 }
 
-ssize_t _led_usage_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+static ssize_t _led_usage_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
     (void)ctx;
+    (void)pdu;
+    
     gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
     coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
     size_t resp_len = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
 
-    const char* led_info =
-        "LED Info:\n"
-        "This device has an RGB LED controllable via /led and /led/color endpoints.\n"
-        "Use GET to retrieve current LED state and PUT to change it.\n";
-
-   memcpy(pdu->payload, led_info, strlen(led_info));
-   return resp_len + strlen(led_info);
+    char *response = (char *)pdu->payload;
+    size_t pos = snprintf(response, len - resp_len,
+        "LED Usage:\n"
+        "GET /led - Get LED state (0=off, 1=on)\n"
+        "PUT /led <0|1> - Set LED state\n"
+        "GET /led/color - Get RGB color (R,G,B)\n"
+        "PUT /led/color <R,G,B> - Set RGB color (0-255)\n"
+    );
+    return resp_len + pos;
 }
 
 
-ssize_t _sensor_temp_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+static ssize_t _sensor_temp_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
     (void)ctx;
     gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
     coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
@@ -233,7 +299,7 @@ ssize_t _sensor_temp_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_req
     return resp_len + pos;
 }
 
-ssize_t _sensor_hum_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+static ssize_t _sensor_hum_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
     (void)ctx;
     gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
     coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
@@ -252,7 +318,7 @@ ssize_t _sensor_hum_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_requ
     return resp_len + pos;
 }
 
-ssize_t _sensor_press_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+static ssize_t _sensor_press_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
     (void)ctx;
     gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
     coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
@@ -271,7 +337,7 @@ ssize_t _sensor_press_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_re
     return resp_len + pos;
 }
 
-ssize_t _sensor_light_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+static ssize_t _sensor_light_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
     (void)ctx;
     gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
     coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
@@ -290,7 +356,7 @@ ssize_t _sensor_light_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_re
     return resp_len + pos;
 }
 
-ssize_t _sensor_accel_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+static ssize_t _sensor_accel_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
     (void)ctx;
     gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
     coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
@@ -311,6 +377,159 @@ ssize_t _sensor_accel_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_re
     return resp_len + pos;
 }
 
+static ssize_t _led_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+    (void)ctx;
+
+    unsigned method_flag = coap_method2flag(coap_get_code_detail(pdu));
+
+
+
+    switch (method_flag) {
+        case COAP_GET:
+            return _led_get_handler(pdu, buf, len, ctx);
+        case COAP_PUT:
+             return _led_put_handler(pdu, buf, len, ctx);
+        default:
+            return gcoap_response(pdu, buf, len, COAP_CODE_METHOD_NOT_ALLOWED);
+    }
+
+}
+
+static ssize_t _led_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+    (void)ctx;
+    gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
+    coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
+    size_t resp_len = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
+
+    char *response = (char *)pdu->payload;
+    phydat_t data;
+    // int result = _read_sensor_value(SAUL_ACT_SWITCH, &data);
+    saul_reg_t* dev = _find_saul_device_by_name("LED Blue (Conn)");
+    // if (result < 0) {
+    //     return gcoap_response(pdu, buf, len, COAP_CODE_PATH_NOT_FOUND);
+    // }
+    if (!dev) {
+        DEBUG("gcoap_cli: LED Blue (Conn) not found\n");
+        return gcoap_response(pdu, buf, len, COAP_CODE_PATH_NOT_FOUND);
+    }
+    int result = saul_reg_read(dev, &data);
+    if (result < 0) {
+        DEBUG("gcoap_cli: error reading LED state\n");
+        return gcoap_response(pdu, buf, len, COAP_CODE_PATH_NOT_FOUND);
+    }   
+    size_t pos = snprintf(response, len - resp_len, "LED state: %d\n", data.val[0]);
+    return resp_len + pos;
+
+}    
+
+static ssize_t _led_put_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+    (void)ctx;
+
+    phydat_t data;
+    
+
+    if (pdu->payload_len == 0) {
+        return gcoap_response(pdu, buf, len, COAP_CODE_BAD_REQUEST);
+    }
+    // Payload in String umwandeln
+    char payload[32] = { 0 };
+    size_t copy_len = pdu->payload_len < sizeof(payload) - 1 ? pdu->payload_len : sizeof(payload) - 1;
+    memcpy(payload, (char *)pdu->payload, copy_len);
+    payload[copy_len] = '\0';
+    printf("%s\n", payload);
+
+    // LED Typ und Wert parsen
+    // Format: "red 1", "blue 0", oder nur "1", "0"
+    char led_name[16] = "LED Blue (Conn)";  // Default
+    int led_value = -1;
+
+    // Prüfe verschiedene Formate
+    if (sscanf(payload, "red %d", &led_value) == 1) {
+        strcpy(led_name, "LED Red (D13)");
+    }
+    else if (sscanf(payload, "blue %d", &led_value) == 1) {
+        strcpy(led_name, "LED Blue (Conn)");
+    }
+    else if (payload[0] == '0' || payload[0] == '1') {
+        // Nur "0" oder "1" ohne LED-Name → Default Blue LED
+        led_value = payload[0] - '0';
+    }
+    else {
+        return gcoap_response(pdu, buf, len, COAP_CODE_BAD_REQUEST);
+    }
+
+    // Validierung
+    if (led_value != 0 && led_value != 1) {
+        return gcoap_response(pdu, buf, len, COAP_CODE_BAD_REQUEST);
+    }
+
+    data.val[0] = led_value;
+
+    // LED Device finden und schreiben
+    saul_reg_t* dev = _find_saul_device_by_name(led_name);
+    if (!dev) {
+        DEBUG("gcoap_cli: %s not found\n", led_name);
+        return gcoap_response(pdu, buf, len, COAP_CODE_INTERNAL_SERVER_ERROR);
+    }
+
+    int result = saul_reg_write(dev, &data);
+    if (result < 0) {
+        DEBUG("gcoap_cli: error writing LED: %d\n", result);
+        return gcoap_response(pdu, buf, len, COAP_CODE_INTERNAL_SERVER_ERROR);
+    }
+    
+
+    gcoap_resp_init(pdu, buf, len, COAP_CODE_CHANGED);
+    coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
+    size_t resp_len = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
+    char *response = (char *)pdu->payload;
+
+
+    size_t pos = snprintf(response, len - resp_len,  "LED state set to: %d\n", data.val[0]);
+    return resp_len + pos;
+}
+
+
+static ssize_t _led_color_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+    (void)ctx;
+
+    unsigned method_flag = coap_method2flag(coap_get_code_detail(pdu));
+
+    switch (method_flag) {
+        case COAP_GET:
+            return _led_color_get_handler(pdu, buf, len, ctx);
+        case COAP_PUT:
+            //  return _led_color_put_handler(pdu, buf, len, ctx);
+        default:
+            return gcoap_response(pdu, buf, len, COAP_CODE_METHOD_NOT_ALLOWED);
+    }
+}
+
+static ssize_t _led_color_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+    (void)ctx;
+    gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
+    coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
+    size_t resp_len = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
+
+    char *response = (char *)pdu->payload;
+    phydat_t data;
+
+    saul_reg_t* dev = _find_saul_device_by_name("WS2812X RGB LED");
+    if (!dev) {
+        DEBUG("gcoap_cli: WS2812X RGB LED not found\n");
+        return gcoap_response(pdu, buf, len, COAP_CODE_PATH_NOT_FOUND);
+    }
+
+    int result = saul_reg_read(dev, &data);
+    if (result < 0) {
+        DEBUG("gcoap_cli: error reading LED color\n");
+        return gcoap_response(pdu, buf, len, COAP_CODE_PATH_NOT_FOUND);
+    }
+
+    size_t pos = snprintf(response, len - resp_len, "LED color - R:%d G:%d B:%d\n", data.val[0], data.val[1], data.val[2]);
+    return resp_len + pos;
+
+}
 
 void notify_observers(void)
 {

@@ -248,14 +248,14 @@ static int _cmd_coap_put(int argc, char **argv)
         return 1;
     }
     
-    int apos = 1;
+    
     coap_pkt_t pdu;
     size_t len;
     sock_udp_ep_t remote;
     uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
 
     const char *path;
-    if (_uristr2remote(argv[apos], &remote, &path, _last_req_uri, sizeof(_last_req_uri))) {
+    if (_uristr2remote(argv[1], &remote, &path, _last_req_uri, sizeof(_last_req_uri))) {
         puts("Could not parse URI");
         return 1;
     }
@@ -263,15 +263,15 @@ static int _cmd_coap_put(int argc, char **argv)
     gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_METHOD_PUT, path);
 
     size_t paylen = 0;
-    if(apos < argc) {
+    if(argc > 2) {
         coap_opt_add_format(&pdu, COAP_FORMAT_TEXT);
-        paylen = strlen(argv[apos++]);
+        paylen = strlen(argv[2]);
     }
 
     if(paylen){
         len = coap_opt_finish(&pdu, COAP_OPT_FINISH_PAYLOAD);
         if (pdu.payload_len >= paylen) {
-            memcpy(pdu.payload, argv[apos++], paylen);
+            memcpy(pdu.payload, argv[2], paylen);
             len += paylen;
         }
         else {
