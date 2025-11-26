@@ -50,7 +50,7 @@ static ssize_t _led_usage_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coa
 static ssize_t _led_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _led_put_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _led_color_put_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-static ssize_t _led_color_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx)
+static ssize_t _led_color_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 
 static saul_reg_t* _find_saul_device_by_name(const char *name);
 static ssize_t _devices_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
