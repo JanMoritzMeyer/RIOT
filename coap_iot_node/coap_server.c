@@ -27,6 +27,7 @@
 // #include "net/dsm.h"
 // #include "tinydtls_keys.h"
 
+ int _led_value_RGB[3] = {0, 0, 0}; // R, G, B
 
 static saul_reg_t* _find_saul_device(uint8_t type);
 static int _read_sensor_value(uint8_t type, phydat_t *data);
@@ -46,7 +47,7 @@ static ssize_t _led_color_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coa
 static ssize_t _led_usage_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _led_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _led_put_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
-static ssize_t _led_color_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _led_color_put_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static saul_reg_t* _find_saul_device_by_name(const char *name);
 static ssize_t _devices_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 
@@ -275,7 +276,7 @@ static ssize_t _led_usage_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coa
         "LED Usage:\n"
         "GET /led - Get LED state (0=off, 1=on)\n"
         "PUT /led <0|1> - Set LED state\n"
-        "GET /led/color - Get RGB color (R,G,B)\n"
+        "GET /led/color - Get RGB color\n"
         "PUT /led/color <R,G,B> - Set RGB color (0-255)\n"
     );
     return resp_len + pos;
@@ -439,17 +440,19 @@ static ssize_t _led_put_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_
     memcpy(payload, (char *)pdu->payload, copy_len);
     payload[copy_len] = '\0';
     printf("%s\n", payload);
-
+    printf("Payload length: %d\n", pdu->payload_len);
     // LED Typ und Wert parsen
-    // Format: "red 1", "blue 0", oder nur "1", "0"
+    // Format: "red1", "blue0", oder nur "1", "0"
     char led_name[16] = "LED Blue (Conn)";  // Default
     int led_value = -1;
 
     // Prüfe verschiedene Formate
-    if (sscanf(payload, "red %d", &led_value) == 1) {
+    if (sscanf(payload, "red,%d", &led_value) == 1) {
+        printf("Red LED selected. led_value: %d\n", led_value);
         strcpy(led_name, "LED Red (D13)");
     }
-    else if (sscanf(payload, "blue %d", &led_value) == 1) {
+    else if (sscanf(payload, "blue,%d", &led_value) == 1) {
+        printf("Blue LED selected. led_value: %d\n", led_value);
         strcpy(led_name, "LED Blue (Conn)");
     }
     else if (payload[0] == '0' || payload[0] == '1') {
@@ -499,23 +502,63 @@ static ssize_t _led_color_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coa
 
     switch (method_flag) {
         case COAP_GET:
-            return _led_color_get_handler(pdu, buf, len, ctx);
+            // return _led_color_get_handler(pdu, buf, len, ctx);
         case COAP_PUT:
-            //  return _led_color_put_handler(pdu, buf, len, ctx);
+             return _led_color_put_handler(pdu, buf, len, ctx);
         default:
             return gcoap_response(pdu, buf, len, COAP_CODE_METHOD_NOT_ALLOWED);
     }
 }
 
-static ssize_t _led_color_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+static ssize_t _led_color_put_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
     (void)ctx;
-    gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
-    coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
-    size_t resp_len = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
-
-    char *response = (char *)pdu->payload;
-    phydat_t data;
     
+    phydat_t data;
+   
+
+    // Validierung ERST (bevor pdu modifiziert wird!)
+    if (pdu->payload_len == 0) {
+        return gcoap_response(pdu, buf, len, COAP_CODE_BAD_REQUEST);
+    }
+
+    // Payload VORHER lesen (bevor gcoap_resp_init das pdu überschreibt!)
+    char payload[32] = { 0 };
+    size_t copy_len = pdu->payload_len < sizeof(payload) - 1 ? pdu->payload_len : sizeof(payload) - 1;
+    memcpy(payload, (char *)pdu->payload, copy_len);
+    payload[copy_len] = '\0';
+    printf("Received payload: %s\n", payload);
+
+    // Manuelles Parsing (sscanf kann auf embedded Systemen crashen)
+    char *ptr = payload;
+    int comma_count = 0;
+    
+    // Parse R
+    _led_value_RGB[0] = atoi(ptr);
+    printf("Parsed R: %d\n", _led_value_RGB[0]);
+    
+    // Finde erstes Komma
+    while (*ptr && *ptr != ',') ptr++;
+    if (*ptr == ',') { ptr++; comma_count++; } else goto parse_error;
+    
+    // Parse G
+    _led_value_RGB[1] = atoi(ptr);
+    printf("Parsed G: %d\n", _led_value_RGB[1]);
+    
+    // Finde zweites Komma
+    while (*ptr && *ptr != ',') ptr++;
+    if (*ptr == ',') { ptr++; comma_count++; } else goto parse_error;
+    
+    // Parse B
+    _led_value_RGB[2] = atoi(ptr);
+    printf("Parsed B: %d\n", _led_value_RGB[2]);
+    
+    if (comma_count != 2) {
+        parse_error:
+        printf("Invalid LED color format (expected R,G,B)\n");
+        return gcoap_response(pdu, buf, len, COAP_CODE_BAD_REQUEST);
+    }
+    
+    printf("LED color parsed - R:%d G:%d B:%d\n", _led_value_RGB[0], _led_value_RGB[1], _led_value_RGB[2]);
 
     saul_reg_t* dev = _find_saul_device_by_name("WS281X RGB LED");
     if (!dev) {
@@ -523,13 +566,37 @@ static ssize_t _led_color_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len,
         return gcoap_response(pdu, buf, len, COAP_CODE_PATH_NOT_FOUND);
     }
 
-    int result = saul_reg_read(dev, &data);
-    // if (result < 0) {
-    //     printf("gcoap_cli: error reading LED color\n");
-    //     return gcoap_response(pdu, buf, len, COAP_CODE_PATH_NOT_FOUND);
-    // }
-    printf("result: %d\n", result);
-    size_t pos = snprintf(response, len - resp_len, "LED color - R:%d G:%d B:%d\n", data.val[0], data.val[1], data.val[2]);
+    // Validiere Wertebereich 0-255
+    if (_led_value_RGB[0] < 0 || _led_value_RGB[0] > 255 ||
+        _led_value_RGB[1] < 0 || _led_value_RGB[1] > 255 ||
+        _led_value_RGB[2] < 0 || _led_value_RGB[2] > 255) {
+        printf("LED color values out of range (0-255)\n");
+        return gcoap_response(pdu, buf, len, COAP_CODE_BAD_REQUEST);
+    }
+
+    data.val[0] = (int16_t)_led_value_RGB[0];
+    data.val[1] = (int16_t)_led_value_RGB[1];
+    data.val[2] = (int16_t)_led_value_RGB[2];
+
+    printf("Writing to LED: R:%d G:%d B:%d\n", data.val[0], data.val[1], data.val[2]);
+
+    int result = saul_reg_write(dev, &data);
+    if (result < 0) {
+        printf("gcoap_cli: error writing LED color: %d\n", result);
+        return gcoap_response(pdu, buf, len, COAP_CODE_INTERNAL_SERVER_ERROR);
+    }
+    printf("LED write successful, result: %d\n", result);
+    
+    // Jetzt erst Response aufbauen!
+    gcoap_resp_init(pdu, buf, len, COAP_CODE_CHANGED);
+    coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
+    size_t resp_len = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
+    
+    // Response-Pointer NACH gcoap_resp_init holen!
+    char *response = (char *)pdu->payload;
+    size_t pos = snprintf(response, len - resp_len, 
+                         "LED color set to R:%d G:%d B:%d\n", 
+                         data.val[0], data.val[1], data.val[2]);
     return resp_len + pos;
 
 }
