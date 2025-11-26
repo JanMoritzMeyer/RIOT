@@ -36,18 +36,22 @@ static int _read_sensor_value(uint8_t type, phydat_t *data);
 static ssize_t _encode_link(const coap_resource_t *resource, char *buf, size_t maxlen, coap_link_encoder_ctx_t *context);
 static ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _riot_board_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+
 static ssize_t _info_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _sensor_accel_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _sensor_hum_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _sensor_light_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _sensor_press_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _sensor_temp_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+
 static ssize_t _led_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _led_color_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _led_usage_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _led_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _led_put_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _led_color_put_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
+static ssize_t _led_color_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx)
+
 static saul_reg_t* _find_saul_device_by_name(const char *name);
 static ssize_t _devices_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 
@@ -275,7 +279,7 @@ static ssize_t _led_usage_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coa
     size_t pos = snprintf(response, len - resp_len,
         "LED Usage:\n"
         "GET /led - Get LED state (0=off, 1=on)\n"
-        "PUT /led <0|1> - Set LED state\n"
+        "PUT /led <red|blue>,<0|1> - Set LED state\n"
         "GET /led/color - Get RGB color\n"
         "PUT /led/color <R,G,B> - Set RGB color (0-255)\n"
     );
@@ -441,29 +445,33 @@ static ssize_t _led_put_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_
     payload[copy_len] = '\0';
     printf("%s\n", payload);
     printf("Payload length: %d\n", pdu->payload_len);
-    // LED Typ und Wert parsen
-    // Format: "red1", "blue0", oder nur "1", "0"
-    char led_name[16] = "LED Blue (Conn)";  // Default
+   
+    // Format: "red,1", "blue,0", oder nur "1", "0"
+    char led_name[20] = "LED Blue (Conn)";  // Default
     int led_value = -1;
 
-    // Prüfe verschiedene Formate
-    if (sscanf(payload, "red,%d", &led_value) == 1) {
-        printf("Red LED selected. led_value: %d\n", led_value);
+    if (strncmp(payload, "red,", 4) == 0) {
+        led_value = atoi(payload + 4);
         strcpy(led_name, "LED Red (D13)");
+        printf("Red LED selected. led_value: %d\n", led_value);
     }
-    else if (sscanf(payload, "blue,%d", &led_value) == 1) {
-        printf("Blue LED selected. led_value: %d\n", led_value);
+    else if (strncmp(payload, "blue,", 5) == 0) {
+    
+        led_value = atoi(payload + 5);
         strcpy(led_name, "LED Blue (Conn)");
+        printf("Blue LED selected. led_value: %d\n", led_value);
     }
     else if (payload[0] == '0' || payload[0] == '1') {
-        // Nur "0" oder "1" ohne LED-Name → Default Blue LED
+
         led_value = payload[0] - '0';
+        printf("Default (Blue) LED selected. led_value: %d\n", led_value);
     }
     else {
+        printf("Invalid LED format. Expected: red,1 or blue,0 or 0/1\n");
         return gcoap_response(pdu, buf, len, COAP_CODE_BAD_REQUEST);
     }
 
-    // Validierung
+    
     if (led_value != 0 && led_value != 1) {
         return gcoap_response(pdu, buf, len, COAP_CODE_BAD_REQUEST);
     }
@@ -502,12 +510,26 @@ static ssize_t _led_color_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coa
 
     switch (method_flag) {
         case COAP_GET:
-            // return _led_color_get_handler(pdu, buf, len, ctx);
+            return _led_color_get_handler(pdu, buf, len, ctx);
         case COAP_PUT:
              return _led_color_put_handler(pdu, buf, len, ctx);
         default:
             return gcoap_response(pdu, buf, len, COAP_CODE_METHOD_NOT_ALLOWED);
     }
+}
+
+static ssize_t _led_color_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
+    (void)ctx;
+    gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
+    coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
+    size_t resp_len = coap_opt_finish(pdu, COAP_OPT_FINISH_PAYLOAD);
+
+    char *response = (char *)pdu->payload;
+
+    size_t pos = snprintf(response, len - resp_len, 
+                         "LED color - R:%d G:%d B:%d\n", 
+                         _led_value_RGB[0], _led_value_RGB[1], _led_value_RGB[2]);
+    return resp_len + pos;
 }
 
 static ssize_t _led_color_put_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx){
