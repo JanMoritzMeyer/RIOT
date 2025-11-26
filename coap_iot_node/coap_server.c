@@ -114,7 +114,9 @@ static ssize_t _devices_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_
 static saul_reg_t* _find_saul_device_by_name(const char *name) {
     saul_reg_t *dev = saul_reg;
     while (dev) {
+        // printf("Checking device: %s, %d\n", dev->name, strcmp(dev->name, name));
         if (dev->name && strcmp(dev->name, name) == 0) {
+
             return dev;
         }
         dev = dev->next;
@@ -513,19 +515,20 @@ static ssize_t _led_color_get_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len,
 
     char *response = (char *)pdu->payload;
     phydat_t data;
+    
 
-    saul_reg_t* dev = _find_saul_device_by_name("WS2812X RGB LED");
+    saul_reg_t* dev = _find_saul_device_by_name("WS281X RGB LED");
     if (!dev) {
-        DEBUG("gcoap_cli: WS2812X RGB LED not found\n");
+        printf("gcoap_cli: WS281X RGB LED not found\n");
         return gcoap_response(pdu, buf, len, COAP_CODE_PATH_NOT_FOUND);
     }
 
     int result = saul_reg_read(dev, &data);
-    if (result < 0) {
-        DEBUG("gcoap_cli: error reading LED color\n");
-        return gcoap_response(pdu, buf, len, COAP_CODE_PATH_NOT_FOUND);
-    }
-
+    // if (result < 0) {
+    //     printf("gcoap_cli: error reading LED color\n");
+    //     return gcoap_response(pdu, buf, len, COAP_CODE_PATH_NOT_FOUND);
+    // }
+    printf("result: %d\n", result);
     size_t pos = snprintf(response, len - resp_len, "LED color - R:%d G:%d B:%d\n", data.val[0], data.val[1], data.val[2]);
     return resp_len + pos;
 
