@@ -9,6 +9,7 @@
 #include "fmt.h"
 #include "net/gcoap.h"
 #include "net/utils.h"
+#include "net/sock/util.h"
 #include "od.h"
 #include "periph/rtc.h"
 #include "shell.h"
@@ -16,6 +17,10 @@
 #include "saul.h"
 #include "saul_reg.h"
 #include "phydat.h"
+
+#include "net/cord/ep.h"
+#include "net/cord/common.h"
+
 
 #include "gcoap_example.h"
 
@@ -33,7 +38,7 @@ static saul_reg_t* _find_saul_device(uint8_t type);
 static int _read_sensor_value(uint8_t type, phydat_t *data);
 // static int _write_led_value(uint8_t type, phydat_t *data);
 
-static ssize_t _encode_link(const coap_resource_t *resource, char *buf, size_t maxlen, coap_link_encoder_ctx_t *context);
+// static ssize_t _encode_link(const coap_resource_t *resource, char *buf, size_t maxlen, coap_link_encoder_ctx_t *context);
 static ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 static ssize_t _riot_board_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx);
 
@@ -72,18 +77,36 @@ static const coap_resource_t _resources[] = {
     { "/devices", COAP_GET, _devices_handler, NULL }, 
 };
 
-static const char *_link_params[] = {
-    ";ct=0;rt=\"count\";obs",
-    NULL
-};
+void register_to_rd(void){
+    sock_udp_ep_t rd_ep;
+    if (sock_udp_str2ep(&rd_ep, "[ff02::1%8]:5683") < 0) {
+        puts("error: unable to parse RD address from RD_ADDR variable");
+    }
+
+    int res = cord_ep_register(&rd_ep, NULL);
+    if (res == CORD_EP_NORD) {
+        puts("warning: registration already in progress");
+    }
+    else if (res == CORD_EP_ERR) {
+        puts("error: unable to trigger simple registration process");
+    }
+}
+
+// static const char *_link_params[] = {
+//     ";ct=0;rt=\"count\";obs",
+//     NULL
+// };
 
 static gcoap_listener_t _listener = {
-    &_resources[0],
-    ARRAY_SIZE(_resources),
-    GCOAP_SOCKET_TYPE_UNDEF,
-    _encode_link,
-    NULL,
-    NULL
+    // &_resources[0],
+    // ARRAY_SIZE(_resources),
+    // GCOAP_SOCKET_TYPE_UNDEF,
+    // _encode_link,
+    // NULL,
+    // NULL
+    .resources     = (coap_resource_t *)&_resources[0],
+    .resources_len = ARRAY_SIZE(_resources),
+    .next          = NULL
 };
 
 
@@ -177,22 +200,22 @@ static int _read_sensor_value(uint8_t type, phydat_t *data) {
 // }
 
 /* Adds link format params to resource list */
-static ssize_t _encode_link(const coap_resource_t *resource, char *buf,
-                            size_t maxlen, coap_link_encoder_ctx_t *context) {
-    ssize_t res = gcoap_encode_link(resource, buf, maxlen, context);
-    if (res > 0) {
-        if (_link_params[context->link_pos]
-                && (strlen(_link_params[context->link_pos]) < (maxlen - res))) {
-            if (buf) {
-                memcpy(buf+res, _link_params[context->link_pos],
-                       strlen(_link_params[context->link_pos]));
-            }
-            return res + strlen(_link_params[context->link_pos]);
-        }
-    }
+// static ssize_t _encode_link(const coap_resource_t *resource, char *buf,
+//                             size_t maxlen, coap_link_encoder_ctx_t *context) {
+//     ssize_t res = gcoap_encode_link(resource, buf, maxlen, context);
+//     if (res > 0) {
+//         if (_link_params[context->link_pos]
+//                 && (strlen(_link_params[context->link_pos]) < (maxlen - res))) {
+//             if (buf) {
+//                 memcpy(buf+res, _link_params[context->link_pos],
+//                        strlen(_link_params[context->link_pos]));
+//             }
+//             return res + strlen(_link_params[context->link_pos]);
+//         }
+//     }
 
-    return res;
-}
+//     return res;
+// }
 
 
 static ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coap_request_ctx_t *ctx)
@@ -650,4 +673,5 @@ void notify_observers(void)
 
 void server_init(void){
     gcoap_register_listener(&_listener);
+    register_to_rd();
 }

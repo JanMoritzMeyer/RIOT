@@ -13,6 +13,11 @@ RIOTBASE ?= $(CURDIR)/../RIOT
 # NOTE: 6LoWPAN will be included if IEEE802.15.4 devices are present
 USEMODULE += netdev_default
 
+# Coap-RD
+USEMODULE += cord_ep_standalone
+USEMODULE += cord_epsim
+USEMODULE += cord_ep
+
 # use GNRC by default
 LWIP_IPV4 ?= 0
 LWIP_IPV6 ?= 0
